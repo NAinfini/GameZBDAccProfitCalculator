@@ -6,9 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Forms;
 using HtmlAgilityPack;
-
 namespace GameZProfitCalculator
 {
     public partial class Form1 : Form
@@ -21,7 +21,7 @@ namespace GameZProfitCalculator
         {
             loadJson();
             loadItemList();
-            loadPrice();
+            
             InitializeComponent();
             updateEnhanceChance();
         }
@@ -64,34 +64,60 @@ namespace GameZProfitCalculator
             }
         }
 
-        private void loadPrice()
+        private async Task loadPriceAsync(string url)
         {
-            string url = "https://ingame-web.gamezbd.com/Market/Login?query_id=AAHwc0QAAwAAAPBzRADgJsmQ&user=%7B%22id%22%3A6446937072%2C%22first_name%22%3A%22NAInfini%22%2C%22last_name%22%3A%22%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1691418569&hash=43da507e1a0873e405f6c81f01d3c08fb3d665c06997e6ecf51f9f096e11f05f";
+            
+            webBrowser1.Url = new Uri(url);
             HtmlWeb web = new HtmlWeb();
+            web.UseCookies = true;
+            web.LoadFromBrowser(url);
             HtmlAgilityPack.HtmlDocument document = web.Load(url);
+            var html = document.DocumentNode.InnerHtml;
+            string LMAO = document.Text;
+            /*
+            HttpClient client = new HttpClient();
+           //var nodes = document.DocumentNode.SelectNodes("//[@item=\"market\"]/div[2]").ToList();
+            var values = new Dictionary<string, string>
+              {
+                  { "mainKey", "12068"},
+                  { "usingCleint", "0"}
+              };
 
-            var loginPageUrl = "https://ingame-web.gamezbd.com/Market/list/hot";
-            CookieContainer cookieContainer = new CookieContainer();
-            var req = (HttpWebRequest)WebRequest.Create(loginPageUrl);
-            req.CookieContainer = cookieContainer;
-            req.Method = "GET";
+            string fileName = @"./header.txt";
+            String[] lines = File.ReadAllLines(fileName);
 
-            WebResponse resp = req.GetResponse();
 
-            HttpWebResponse response = resp as HttpWebResponse;
+            Uri myUri = new Uri(url);
+            string query_id = HttpUtility.ParseQueryString(myUri.Query).Get("query_id");
+            string user = HttpUtility.ParseQueryString(myUri.Query).Get("user");
+            string auth_date = HttpUtility.ParseQueryString(myUri.Query).Get("auth_date");
+            string hash = HttpUtility.ParseQueryString(myUri.Query).Get("hash");
 
-            CookieCollection cookies;
-            if (response != null)
+            var content = new FormUrlEncodedContent(values);
+
+            client.DefaultRequestHeaders.Add("query_id", query_id);
+            client.DefaultRequestHeaders.Add("user", user);
+            client.DefaultRequestHeaders.Add("auth_date", auth_date);
+            client.DefaultRequestHeaders.Add("hash", hash);
+            string param ="";
+
+            for(int i = 0; i < lines.Length; i++)
             {
-                cookies = response.Cookies; //Use this cookies in above code to send with username and password.
+                if (i%2 == 0){
+                    param = lines[i].Remove(lines[i].Length - 1, 1);
+                }
+                else
+                {
+                    client.DefaultRequestHeaders.Add(param, lines[i]);
+                }
             }
-            var nodes = document.DocumentNode.SelectNodes("//[@item=\"market\"]/div[2]").ToList();
-
-            foreach (var node in nodes)
-                Console.WriteLine(node.InnerText);
+            string ok ="oos";
+            var response =await client.PostAsync(url, content);
+            var responseString = await response.Content.ReadAsStringAsync();
             foreach (Item temp in items)
             {
             }
+            */
         }
 
         private void StackNoBox_TextChanged(object sender, EventArgs e)
@@ -139,6 +165,11 @@ namespace GameZProfitCalculator
 
         private void updateDataGridView()
         {
+        }
+
+        private void URLBox_TextChanged(object sender, EventArgs e)
+        {
+            loadPriceAsync(((TextBox)sender).Text);
         }
     }
 }
