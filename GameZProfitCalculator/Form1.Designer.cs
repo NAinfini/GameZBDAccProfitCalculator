@@ -41,7 +41,6 @@
             this.EnhanceChanceLbl = new System.Windows.Forms.Label();
             this.URLBox = new System.Windows.Forms.TextBox();
             this.URLLbl = new System.Windows.Forms.Label();
-            this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -175,20 +174,11 @@
             this.URLLbl.TabIndex = 9;
             this.URLLbl.Text = "URL";
             // 
-            // webBrowser1
-            // 
-            this.webBrowser1.Location = new System.Drawing.Point(210, 407);
-            this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
-            this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(1507, 771);
-            this.webBrowser1.TabIndex = 10;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(19F, 37F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(2700, 1263);
-            this.Controls.Add(this.webBrowser1);
             this.Controls.Add(this.URLLbl);
             this.Controls.Add(this.URLBox);
             this.Controls.Add(this.EnhanceChanceLbl);
@@ -222,7 +212,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ItemGrossProfit;
         private System.Windows.Forms.TextBox URLBox;
         private System.Windows.Forms.Label URLLbl;
-        private System.Windows.Forms.WebBrowser webBrowser1;
     }
 }
 
