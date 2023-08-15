@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
@@ -14,16 +16,16 @@ namespace GameZProfitCalculator
     public partial class Form1 : Form
     {
         private List<Item> items = new List<Item>();
+        private List<int> Ids = new List<int>();
         private language Lan = null;
         private int stackNumber = 50;
-
         public Form1()
         {
+            InitializeComponent();
             loadJson();
             loadItemList();
-            
-            InitializeComponent();
             updateEnhanceChance();
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -34,6 +36,16 @@ namespace GameZProfitCalculator
         {
             string text = File.ReadAllText(@"./DefaultLanguage.json");
             Lan = JsonSerializer.Deserialize<language>(text);
+            EveCheck.Text = Lan.eveCheckText;
+            PreCheck.Text = Lan.preCheckText;
+            stackCountLbl.Text = Lan.SClblText;
+            updateBtn.Text = Lan.updateBtnText;
+            dataGridView1.Columns[0].HeaderText = Lan.ItemIDText;
+            dataGridView1.Columns[1].HeaderText = Lan.ItemNameText;
+            dataGridView1.Columns[2].HeaderText = Lan.ItemGradeText;
+            dataGridView1.Columns[3].HeaderText = Lan.ItemProfitText;
+            dataGridView1.Columns[4].HeaderText = Lan.ItemGrossText;
+
         }
 
         private void loadItemList()
@@ -57,8 +69,7 @@ namespace GameZProfitCalculator
                     }
                     else
                     {
-                        Item item = new Item(tempStr[1], value);
-                        items.Add(item);
+                        Ids.Add(value);
                     }
                 }
             }
@@ -66,58 +77,24 @@ namespace GameZProfitCalculator
 
         private async Task loadPriceAsync(string url)
         {
-            
-            webBrowser1.Url = new Uri(url);
-            HtmlWeb web = new HtmlWeb();
-            web.UseCookies = true;
-            web.LoadFromBrowser(url);
-            HtmlAgilityPack.HtmlDocument document = web.Load(url);
-            var html = document.DocumentNode.InnerHtml;
-            string LMAO = document.Text;
-            /*
-            HttpClient client = new HttpClient();
-           //var nodes = document.DocumentNode.SelectNodes("//[@item=\"market\"]/div[2]").ToList();
-            var values = new Dictionary<string, string>
-              {
-                  { "mainKey", "12068"},
-                  { "usingCleint", "0"}
-              };
-
-            string fileName = @"./header.txt";
-            String[] lines = File.ReadAllLines(fileName);
-
-
-            Uri myUri = new Uri(url);
-            string query_id = HttpUtility.ParseQueryString(myUri.Query).Get("query_id");
-            string user = HttpUtility.ParseQueryString(myUri.Query).Get("user");
-            string auth_date = HttpUtility.ParseQueryString(myUri.Query).Get("auth_date");
-            string hash = HttpUtility.ParseQueryString(myUri.Query).Get("hash");
-
-            var content = new FormUrlEncodedContent(values);
-
-            client.DefaultRequestHeaders.Add("query_id", query_id);
-            client.DefaultRequestHeaders.Add("user", user);
-            client.DefaultRequestHeaders.Add("auth_date", auth_date);
-            client.DefaultRequestHeaders.Add("hash", hash);
-            string param ="";
-
-            for(int i = 0; i < lines.Length; i++)
+            HttpClient cl = new HttpClient() { BaseAddress = new Uri(url) };
+            HttpResponseMessage response = await cl.GetAsync(url);
+            HttpRequestMessage request = new HttpRequestMessage();
+            request.Method = HttpMethod.Post;
+            request.RequestUri = new Uri("https://ingame-web.gamezbd.com/Market/GetWorldMarketSubList");
+            foreach(int id in Ids)
             {
-                if (i%2 == 0){
-                    param = lines[i].Remove(lines[i].Length - 1, 1);
-                }
-                else
+                request.Content = new StringContent("mainKey="+id+"&usingCleint=0", Encoding.UTF8, "application/x-www-form-urlencoded");
+                response = await cl.SendAsync(request);
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                queryResult tempResult = JsonSerializer.Deserialize<queryResult>(jsonResponse);
+                items = new List<Item>();
+                foreach(Item tempItem in tempResult.detailList)
                 {
-                    client.DefaultRequestHeaders.Add(param, lines[i]);
+                    items.Add(tempItem);
                 }
             }
-            string ok ="oos";
-            var response =await client.PostAsync(url, content);
-            var responseString = await response.Content.ReadAsStringAsync();
-            foreach (Item temp in items)
-            {
-            }
-            */
+            updateDataGridView();
         }
 
         private void StackNoBox_TextChanged(object sender, EventArgs e)
@@ -165,11 +142,88 @@ namespace GameZProfitCalculator
 
         private void updateDataGridView()
         {
+            dataGridView1.Rows.Clear();
+            foreach (var tempItem in items)
+            {
+                if(tempItem.subKey!=0)
+                {
+                    dataGridView1.Rows.Add(tempItem.mainKey, tempItem.name, tempItem.subKey, getProfit(tempItem).ToString("N"), getGrossProfit(tempItem).ToString("N"));
+                }
+            }
+            dataGridView1.Update();
         }
 
-        private void URLBox_TextChanged(object sender, EventArgs e)
+        private long getProfit(Item item)
         {
-            loadPriceAsync(((TextBox)sender).Text);
+            foreach(Item tempItem in items)
+            {
+                if (tempItem.mainKey.Equals(item.mainKey) && (tempItem.subKey + 1).Equals(item.subKey))
+                {
+                    return item.pricePerOne - tempItem.pricePerOne;
+                }
+            }
+            return -1;
+        }
+
+        private double getGrossProfit(Item item)
+        {
+            
+            foreach (Item tempItem in items)
+            {
+                if (tempItem.mainKey.Equals(item.mainKey) && (tempItem.subKey + 1).Equals(item.subKey))
+                {
+                    double chance = getEnhanceChance(item.subKey);
+                    if (chance > 1)
+                    {
+                        return item.pricePerOne - tempItem.pricePerOne;
+                    }
+                    else
+                    {
+                        return chance * (item.pricePerOne - tempItem.pricePerOne);
+                    }
+                }
+            }
+            return -1;
+        }
+
+        private double getEnhanceChance(int grade)
+        {
+            double multiplier = 1;
+            if (EveCheck.Checked)
+            {
+                multiplier *= 1.2;
+            }
+            if (PreCheck.Checked)
+            {
+                multiplier *= 1.3;
+            }
+            if (grade == 1)
+            {
+                return (25 + stackNumber * 0.5 * multiplier) / 100;
+            }
+            else if(grade == 2)
+            {
+                return (10 + stackNumber * 0.5 * multiplier) / 100;
+            }else if(grade == 3)
+            {
+                return (7.5 + stackNumber * 0.5 * multiplier) / 100;
+            }else if(grade == 4)
+            {
+                return (2.5 + stackNumber * 0.5 * multiplier) / 100;
+            }
+            else if(grade == 5)
+            {
+                return (0.5 + stackNumber * 0.5 * multiplier) / 100;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            loadPriceAsync(URLBox.Text);
         }
     }
 }
