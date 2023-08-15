@@ -14,5 +14,7 @@
         public string ItemNameText { get; set; }
         public string ItemProfitText { get; set; }
         public string ItemGrossText { get; set; }
+        public string noFile { get; set; }
+        public string ItemCountText { get; set; }
     }
 }

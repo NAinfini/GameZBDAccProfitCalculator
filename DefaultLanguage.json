@@ -1,0 +1,16 @@
+{
+  "NoColumnError": "No column",
+  "NotAInt": "Not a integer",
+  "JobTitle": "Title",
+  "SClblText": "Stack Count",
+  "eveCheckText": "Event",
+  "preCheckText": "Preminum",
+  "updateBtnText": "Update",
+  "ItemIDText": "Item ID",
+  "ItemGradeText": "Item Grade",
+  "ItemNameText": "Item Name",
+  "ItemProfitText": "Profit",
+  "ItemGrossText": "Gross Profit",
+  "noFile": "File do not exist:",
+  "ItemCountText": "Count"
+}
