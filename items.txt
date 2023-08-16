@@ -1,5 +1,26 @@
 12068:Ominous Ring
-12061:t
-12060:e
-11653:D
-11629:T
+12061:Tungrad Ring
+12060:Eyes of the Ruins Ring
+12031:Ring of Crescent Guardian
+12032:Ring of Cadry Guardian
+11653:Deboreka Necklace
+11629:Tungrad Necklace
+11607:Ogre Ring
+11630:Laytenn's Power Stone
+11663:Revived Lunar Necklace
+11662:Revived River Necklace
+11625:Sicil's Necklace
+11882:Deboreka Earring
+11855:Dawn Earring
+11875:Vaha's Dawn
+11853:Black Distortion Earring
+11856:Eternal Earring
+11828:Tungrad Earring
+11834:Narc Earring
+12276:Deboreka Belt
+12257:Turo Belt
+12237:Tungrad Belt
+12236:Valtarra Eclipsed Belt
+12230:Basilisk Belt
+12229:Centaurus Belt
+12251:Orkinrad Belt
